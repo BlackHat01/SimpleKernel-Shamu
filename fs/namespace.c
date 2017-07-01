@@ -23,7 +23,6 @@
 #include <linux/uaccess.h>
 #include <linux/proc_ns.h>
 #include <linux/magic.h>
-#include <linux/slab.h>
 #include "pnode.h"
 #include "internal.h"
 
@@ -2561,9 +2560,9 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {
 	int ret;
-	char *kernel_type = kmalloc(sizeof(*kernel_type), GFP_KERNEL);
+	char *kernel_type;
 	struct filename *kernel_dir;
-	char *kernel_dev = kmalloc(sizeof(*kernel_dev), GFP_KERNEL);
+	char *kernel_dev;
 	unsigned long data_page;
 
 	ret = copy_mount_string(type, &kernel_type);
