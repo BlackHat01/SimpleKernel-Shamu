@@ -1,3 +1,4 @@
+ccflags-y := -marm -mtune=cortex-a15 -mfpu=neon-vfpv4 -O2
 # CPUfreq core
 obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
 # CPUfreq stats
