@@ -1010,6 +1010,10 @@ static void kcryptd_io_write(struct dm_crypt_io *io)
 	generic_make_request(clone);
 }
 
+#ifdef CONFIG_INTELLI_PLUG
+extern void intelli_plug_perf_boost(bool);
+#endif
+
 static int dmcrypt_write(void *data)
 {
 	struct crypt_config *cc = data;
@@ -1062,6 +1066,9 @@ pop_from_list:
 			kcryptd_io_write(io);
 		} while (!RB_EMPTY_ROOT(&write_tree));
 		blk_finish_plug(&plug);
+#ifdef CONFIG_INTELLI_PLUG
+		intelli_plug_perf_boost(false);
+#endif
 	}
 	return 0;
 }
@@ -1311,12 +1318,15 @@ static int crypt_set_key(struct crypt_config *cc, char *key)
 	if (!cc->key_size && strcmp(key, "-"))
 		goto out;
 
+	/* clear the flag since following operations may invalidate previously valid key */
+	clear_bit(DM_CRYPT_KEY_VALID, &cc->flags);
+
 	if (cc->key_size && crypt_decode_key(cc->key, key, cc->key_size) < 0)
 		goto out;
 
-	set_bit(DM_CRYPT_KEY_VALID, &cc->flags);
-
 	r = crypt_setkey_allcpus(cc);
+	if (!r)
+		set_bit(DM_CRYPT_KEY_VALID, &cc->flags);
 
 out:
 	/* Hex key string not needed after here, so wipe it. */
@@ -1678,6 +1688,9 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 		ti->error = "Couldn't spawn write thread";
 		goto bad;
 	}
+#ifdef CONFIG_INTELLI_PLUG
+	intelli_plug_perf_boost(true);
+#endif
 	wake_up_process(cc->write_thread);
 
 	ti->num_flush_bios = 1;
