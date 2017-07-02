@@ -1,5 +1,8 @@
 # Simple Kernel Shamu config
 
+# Release Version
+CONFIG_LOCALVERSION="-SimpleKernel_r1"
+
 # LZO
 CONFIG_HAVE_KERNEL_LZO=y
 CONFIG_KERNEL_LZO=y
